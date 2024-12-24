@@ -15,7 +15,7 @@ window = Tk()
 window.title("Alarm")
 window.config(background="#cdf7f3")
 
-title_label = Label(window, text="Welcome! Feel free to set an alarm!", font=("Comic Sans MS", 16, "bold"), bg="#f5e2cb")
+title_label = Label(window, text="Alarm Application\nWelcome! Feel free to set an alarm!", font=("Comic Sans MS", 16, "bold"), bg="#f5e2cb")
 title_label.grid(row=0, column=0, columnspan=3, pady=10, sticky="ew")
 
 style = ttk.Style()
@@ -94,8 +94,8 @@ def check_alarm():
                     list_record.insert(i, f"Alarm: {snoozed_alarm} | Note: {record[i]['note']} | Date: {record[i]['date']} | Day: {record[i]['day']}")
 
                     # Optionally: Update the alarm label on the UI
-                    Label_alarm.config(text=f"Snoozed! New time: {snoozed_alarm} \n Note: {user_note}", font=("Arial", 15), fg="blue")
-                    Label_alarm.grid(row=5, column=0, columnspan=3, pady=10)
+                    label_alarm.config(text=f"Snoozed! New time: {snoozed_alarm} \n Note: {user_note}", font=("Arial", 15), fg="blue")
+                    label_alarm.grid(row=5, column=0, columnspan=3, pady=10)
                     
                     print(f"Snoozed alarm! New time: {snoozed_alarm}, Note: {user_note}")
                     alarm["active"] = True
@@ -162,8 +162,8 @@ list_record.grid(row=6, column=0, columnspan=3)
 save = Button(window, text="Save", command=alarm_record, font=("Arial", 10, "bold"))
 save.grid(row=4, column=0, columnspan=2)
 
-Turn_on = Button(window, text="Turn on", command=start_alarm, font=("Arial", 10, "bold"))
-Turn_on.grid(row=4, column=1, pady=10)
+turn_on = Button(window, text="Turn on", command=start_alarm, font=("Arial", 10, "bold"))
+turn_on.grid(row=4, column=1, pady=10)
 
 delete = Button(window, text="Delete",command=delete_alarm ,font=("Arial", 10, "bold"))
 delete.grid(row=4, column=2, pady=10)
@@ -174,8 +174,14 @@ label_msg.grid(row=3, column=0)
 msg = Entry(window, width=30)
 msg.grid(row=3, column=0, columnspan=3, pady=20)
 
-Label_alarm = Label(window, text="", font=("Arial", 15))
-Label_alarm.grid(row=6, column=0)
+label_alarm = Label(window, text="", font=("Arial", 15))
+label_alarm.grid(row=6, column=0)
+
+
+instruction_msg = Label(window, text="*After you select the time, remember to save then proceed to press Turn on.",font=("Arial", 10, "bold"), fg="red")
+instruction_msg.grid(row=5, column=3, columnspan=7)
+
+
 
 check_alarm()
 display_time()
