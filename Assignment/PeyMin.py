@@ -55,6 +55,9 @@ def alarm_record():
     list_record.insert(END, f"Alarm: {set_alarm} | Note: {user_note} | Date: {current_date} | Day: {today_day}")
     messagebox.showinfo("Succes", "You have save succesfully")
 
+    
+
+
 def check_alarm():
     """Check all saved alarms and trigger them if the current time matches."""
     current_time = datetime.now().strftime("%I:%M %p")
@@ -81,12 +84,14 @@ def check_alarm():
             def snooze_alarm():
                 pygame.mixer.music.stop() 
                 if record:  # Check if there's an alarm in the list
-                    snooze_time = datetime.now() + timedelta(minutes=1)  # Add 5 minutes to the current time
+                    snooze_time = datetime.now() + timedelta(minutes=5)  # Add 5 minutes to the current time
                     snoozed_alarm = snooze_time.strftime("%I:%M %p")  # Format it in the same way
                     user_note = alarm["note"]  # Retain the same note for the snoozed alarm
 
                     # Update the alarm in the list (replace the last saved alarm)
-                    record[i] = {"alarm_time": snoozed_alarm, "note": user_note, "active": True}
+                    record[i] = {"alarm_time": snoozed_alarm, "note": user_note, "active": True,"date": alarm["date"],"day": alarm["date"]}
+                    list_record.delete(i)
+                    list_record.insert(i, f"Alarm: {snoozed_alarm} | Note: {record[i]['note']} | Date: {record[i]['date']} | Day: {record[i]['day']}")
 
                     # Optionally: Update the alarm label on the UI
                     Label_alarm.config(text=f"Snoozed! New time: {snoozed_alarm} \n Note: {user_note}", font=("Arial", 15), fg="blue")
@@ -95,6 +100,8 @@ def check_alarm():
                     print(f"Snoozed alarm! New time: {snoozed_alarm}, Note: {user_note}")
                     alarm["active"] = True
 
+                    
+                    
                     # Ensure that the alarm checks again after the snooze time
                     window.after(300000,check_alarm)
 
@@ -130,7 +137,7 @@ def start_alarm():
         messagebox.showerror("Error", "Please save an alarm before starting!")  # Show error message if no alarm is saved
     else:
         print("Starting alarm...")
-        # Continue with starting the alarm if it is saved (you can put your alarm logic here)
+        # Continue with starting the alarm if it is saved
 
 def delete_alarm():
     selected_alarm =list_record.curselection()
@@ -152,13 +159,13 @@ list_record = Listbox(window, width=60, height=20)
 list_record.grid(row=6, column=0, columnspan=3)
 
 # BUTTONS
-save = Button(window, text="Save", command=alarm_record, font=("Ink Free", 10, "bold"))
+save = Button(window, text="Save", command=alarm_record, font=("Arial", 10, "bold"))
 save.grid(row=4, column=0, columnspan=2)
 
-Turn_on = Button(window, text="Turn on", command=start_alarm, font=("Ink Free", 10, "bold"))
+Turn_on = Button(window, text="Turn on", command=start_alarm, font=("Arial", 10, "bold"))
 Turn_on.grid(row=4, column=1, pady=10)
 
-delete = Button(window, text="Delete",command=delete_alarm ,font=("Ink Free", 10, "bold"))
+delete = Button(window, text="Delete",command=delete_alarm ,font=("Arial", 10, "bold"))
 delete.grid(row=4, column=2, pady=10)
 
 label_msg = Label(window, text="Note: ", font=("Arial", 15), background="lightblue")
