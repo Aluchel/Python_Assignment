@@ -5,6 +5,11 @@ import time
 from datetime import *
 from datetime import datetime
 import os
+import pygame 
+ 
+
+# Initialize the pygame mixer 
+pygame.mixer.init() 
 
 window = Tk()
 window.title("Alarm")
@@ -33,12 +38,7 @@ AM_PM.grid(row=1, column=2)
 
 record = []
 
-def save_error_msg():
-    # Show an error message using messagebox.showerror
-    messagebox.showerror("Error", "Please save an alarm before starting!")
 
-def save_succes_msg():
-    messagebox.showinfo("Congratulation!!", "You have save succesfully")
 
 def alarm_record():
     user_note = msg.get()
@@ -46,45 +46,57 @@ def alarm_record():
     current_date = datetime.now().strftime("%b %d, %Y")
     today_day = datetime.now().strftime("%A")
 
-    record.append((set_alarm, user_note, current_date, today_day))
+    record.append({"alarm_time": set_alarm,
+        "note": user_note,
+        "active": True,
+        "date": current_date,
+        "day": today_day})
+    
     list_record.insert(END, f"Alarm: {set_alarm} | Note: {user_note} | Date: {current_date} | Day: {today_day}")
-
-    Label_alarm.config(text=f"Alarm saved: {set_alarm} \n Note: {user_note}", font=("Arial", 15), fg="green")
-    Label_alarm.grid(row=5, column=0, columnspan=5, pady=10)
-   
-    save_succes_msg()
+    messagebox.showinfo("Succes", "You have save succesfully")
 
 def check_alarm():
     """Check all saved alarms and trigger them if the current time matches."""
     current_time = datetime.now().strftime("%I:%M %p")
-    for i, (alarm_time, note, _, _) in enumerate(record[:]):
-        if alarm_time == current_time:
+    for i, alarm in enumerate(record[:]):
+        if alarm["active"] and alarm["alarm_time"] == current_time:
+            pygame.mixer.music.load("C:/Users/wongp/Music/morning_flower.mp3")  # Replace with your file path
+            pygame.mixer.music.play(-1)
+            
+        
             # Create the alarm notification window
             alarm_window = Toplevel(window)
             alarm_window.title("Alarm Notification")
             alarm_window.geometry("300x200")
 
             # Display the alarm message
-            alarm_message = Label(alarm_window, text=f"ALARM! It's {alarm_time}\nNote: {note}", font=("Arial", 14), fg="red")
+            alarm_message = Label(alarm_window, text=f"ALARM! It's {alarm['alarm_time']}\nNote: {alarm['note']}", font=("Arial", 14), fg="red")
             alarm_message.pack(pady=20)
 
             def dismiss_alarm():
-                alarm_window.destroy()  # Close the alarm window
+                 pygame.mixer.music.stop()
+                 alarm_window.destroy()  # Close the alarm window
+                 alarm["active"] = False  # Mark this alarm as dismissed
 
             def snooze_alarm():
+                pygame.mixer.music.stop() 
                 if record:  # Check if there's an alarm in the list
-                    snooze_time = datetime.now() + timedelta(minutes=5)  # Add 5 minutes to the current time
+                    snooze_time = datetime.now() + timedelta(minutes=1)  # Add 5 minutes to the current time
                     snoozed_alarm = snooze_time.strftime("%I:%M %p")  # Format it in the same way
-                    user_note = record[-1][1]  # Retain the same note for the snoozed alarm
+                    user_note = alarm["note"]  # Retain the same note for the snoozed alarm
 
                     # Update the alarm in the list (replace the last saved alarm)
-                    record[-1] = (snoozed_alarm, user_note, record[-1][2], record[-1][3])
+                    record[i] = {"alarm_time": snoozed_alarm, "note": user_note, "active": True}
 
                     # Optionally: Update the alarm label on the UI
                     Label_alarm.config(text=f"Snoozed! New time: {snoozed_alarm} \n Note: {user_note}", font=("Arial", 15), fg="blue")
                     Label_alarm.grid(row=5, column=0, columnspan=3, pady=10)
                     
                     print(f"Snoozed alarm! New time: {snoozed_alarm}, Note: {user_note}")
+                    alarm["active"] = True
+
+                    # Ensure that the alarm checks again after the snooze time
+                    window.after(300000,check_alarm)
 
             # Add buttons for dismissing or snoozing the alarm
             dismiss_button = Button(alarm_window, text="Dismiss", command=dismiss_alarm, font=("Arial", 12))
@@ -93,11 +105,10 @@ def check_alarm():
             snooze_button = Button(alarm_window, text="Snooze", command=snooze_alarm, font=("Arial", 12))
             snooze_button.pack(pady=10)
 
-            print(f"ALARM! Time to wake up! Alarm: {alarm_time}, Note: {note}")
-            Label_alarm.config(text=f"ALARM! {alarm_time}: {note}", fg="orange")
-            del record[i]
+            print(f"ALARM! Time to wake up! Alarm: {alarm['alarm_time']}, Note: {alarm['note']}")
+            alarm["active"] = False  # Mark this alarm as triggered
             break
-
+    
     window.after(1000, check_alarm) 
 
 def display_time():
@@ -113,15 +124,26 @@ def display_time():
     date_label.grid(row=1, column=5)
 
 
-
-
 def start_alarm():
     """Start the alarm, but only if an alarm is saved."""
     if not record:  # Check if the record list is empty
-        save_error_msg()  # Show error message if no alarm is saved
+        messagebox.showerror("Error", "Please save an alarm before starting!")  # Show error message if no alarm is saved
     else:
         print("Starting alarm...")
         # Continue with starting the alarm if it is saved (you can put your alarm logic here)
+
+def delete_alarm():
+    selected_alarm =list_record.curselection()
+    if not selected_alarm:
+        messagebox.showerror("Error","Please select a alarm before delete")
+        return
+    
+    index = selected_alarm[0]
+    list_record.delete(index)
+
+    del record[index]
+    messagebox.showinfo("Deleted", "Alarm deleted successfully.")
+
 
 time_label = Label(window, text="")
 date_label = Label(window, text="")
@@ -133,11 +155,11 @@ list_record.grid(row=6, column=0, columnspan=3)
 save = Button(window, text="Save", command=alarm_record, font=("Ink Free", 10, "bold"))
 save.grid(row=4, column=0, columnspan=2)
 
-Turn_on = Button(window, text="Turn_on", command=start_alarm, font=("Ink Free", 10, "bold"))
-Turn_on.grid(row=4, column=1, pady=10, columnspan=2)
+Turn_on = Button(window, text="Turn on", command=start_alarm, font=("Ink Free", 10, "bold"))
+Turn_on.grid(row=4, column=1, pady=10)
 
-delete = Button(window, text="Turn_on", command=start_alarm, font=("Ink Free", 10, "bold"))
-delete.grid(row=4, column=1, pady=10, columnspan=2)
+delete = Button(window, text="Delete",command=delete_alarm ,font=("Ink Free", 10, "bold"))
+delete.grid(row=4, column=2, pady=10)
 
 label_msg = Label(window, text="Note: ", font=("Arial", 15), background="lightblue")
 label_msg.grid(row=3, column=0)
