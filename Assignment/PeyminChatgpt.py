@@ -33,6 +33,9 @@ AM_PM.grid(row=1, column=2)
 
 record = []
 
+# A flag to track which alarms have triggered
+triggered_alarms = set()
+
 def save_error_msg():
     # Show an error message using messagebox.showerror
     messagebox.showerror("Error", "Please save an alarm before starting!")
@@ -57,8 +60,12 @@ def alarm_record():
 def check_alarm():
     """Check all saved alarms and trigger them if the current time matches."""
     current_time = datetime.now().strftime("%I:%M %p")
+    
     for i, (alarm_time, note, _, _) in enumerate(record[:]):
-        if alarm_time == current_time:
+        if alarm_time == current_time and alarm_time not in triggered_alarms:
+            # Add alarm to the triggered_alarms set so it doesn't trigger again
+            triggered_alarms.add(alarm_time)
+
             # Create the alarm notification window
             alarm_window = Toplevel(window)
             alarm_window.title("Alarm Notification")
@@ -72,6 +79,7 @@ def check_alarm():
                 alarm_window.destroy()  # Close the alarm window
                 del record[i]  # Remove the alarm from the record list
                 list_record.delete(i)  # Remove the alarm from the listbox
+                triggered_alarms.remove(alarm_time)  # Remove from triggered alarms
 
             def snooze_alarm():
                 if record:  # Check if there's an alarm in the list
@@ -100,6 +108,8 @@ def check_alarm():
                     list_record.delete(i)
                     list_record.insert(i, f"Alarm: {snoozed_alarm} | Note: {note} | Date: {record[i][2]} | Day: {record[i][3]}")
 
+                    # Remove from triggered_alarms since the alarm time has been changed
+                    triggered_alarms.remove(alarm_time)
                     print(f"Snoozed alarm! New time: {snoozed_alarm}, Note: {note}")
 
             # Add buttons for dismissing or snoozing the alarm
@@ -113,7 +123,7 @@ def check_alarm():
             Label_alarm.config(text=f"ALARM! {alarm_time}: {note}", fg="orange")
             break
 
-    window.after(1000, check_alarm) 
+    window.after(1000, check_alarm)  # Keep checking every second
 
 def display_time():
     """Updates the current time displayed on the front page."""
@@ -133,7 +143,6 @@ def start_alarm():
         save_error_msg()  # Show error message if no alarm is saved
     else:
         print("Starting alarm...")
-        # Continue with starting the alarm if it is saved (you can put your alarm logic here)
 
 def delete_alarm():
     """Delete the selected alarm."""
@@ -170,6 +179,6 @@ msg.grid(row=3, column=0, columnspan=3, pady=20)
 Label_alarm = Label(window, text="", font=("Arial", 15))
 Label_alarm.grid(row=5, column=0)
 
-check_alarm()
+check_alarm()  # Start checking alarms
 display_time()
 window.mainloop()
