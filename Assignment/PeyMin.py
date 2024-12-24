@@ -1,6 +1,5 @@
 from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk,messagebox
 import time
 from datetime import *
 from datetime import datetime
@@ -97,9 +96,9 @@ def check_alarm():
                     label_alarm.config(text=f"Snoozed! New time: {snoozed_alarm} \n Note: {user_note}", font=("Arial", 15), fg="blue")
                     label_alarm.grid(row=5, column=0, columnspan=3, pady=10)
                     
-                    print(f"Snoozed alarm! New time: {snoozed_alarm}, Note: {user_note}")
+                    print(f" New time: {snoozed_alarm}, Note: {user_note}")
                     alarm["active"] = True
-
+                    messagebox.showinfo("Succes", "You have snooze succesfully")
                     
                     
                     # Ensure that the alarm checks again after the snooze time
@@ -136,7 +135,9 @@ def start_alarm():
     if not record:  # Check if the record list is empty
         messagebox.showerror("Error", "Please save an alarm before starting!")  # Show error message if no alarm is saved
     else:
+        messagebox.showinfo("Succes", "You have turn on succesfully")
         print("Starting alarm...")
+        
         # Continue with starting the alarm if it is saved
 
 def delete_alarm():
@@ -179,7 +180,7 @@ label_alarm.grid(row=6, column=0)
 
 
 instruction_msg = Label(window, text="*After you select the time, remember to save then proceed to press Turn on.",font=("Arial", 10, "bold"), fg="red")
-instruction_msg.grid(row=5, column=3, columnspan=7)
+instruction_msg.grid(row=4, column=3, columnspan=7)
 
 
 
